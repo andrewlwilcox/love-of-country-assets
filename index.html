@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Love of Country</title>
+  
+  <!-- Martian Mono Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@100..800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"Martian Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Monospace-driven aesthetic styling */
+    html, body {
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      color: #ffffff;
+      font-family: 'Martian Mono', monospace;
+    }
+
+    /* Core typography spec matching Figma */
+    .figma-text-spec {
+      font-family: 'Martian Mono', monospace;
+      font-size: 12px;
+      line-height: 14px;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+    }
+
+    /* Video engine elements */
+    .video-viewport {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100dvw !important;
+      height: 100dvh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
+      overflow: hidden !important;
+      z-index: 0 !important;
+      transform: translateZ(0); /* Hardware acceleration and clip fix */
+      opacity: 0;
+      animation: globalFadeIn 1.5s ease-out forwards;
+    }
+
+    video {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) scale(1.05) !important;
+      width: 100dvw !important;
+      height: 100dvh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
+      object-fit: cover !important;
+      display: block !important;
+      /* Transition properties */
+      transition: opacity 1.25s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity;
+      opacity: 0;
+    }
+
+    /* Blur & Vignette overlays */
+    .blur-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 3;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: backdrop-filter 0.1s ease-out;
+    }
+
+    .vignette-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 4;
+      background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.425) 100%);
+    }
+
+    /* Main absolute UI wrapper acting as the center anchor for the Wordmark */
+    .ui-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 286px;
+      z-index: 10;
+      box-sizing: border-box;
+      opacity: 0;
+      animation: globalFadeIn 1.5s ease-out forwards;
+    }
+
+    /* Absolute satellite positioning for the Navigation Block (Top Satellite) */
+    .nav-container {
+      position: absolute;
+      bottom: calc(100% + 24px);
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      white-space: nowrap;
+    }
+
+    .wordmark-container {
+      width: 100%;
+    }
+
+    #wordmark {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: blur(0px) !important;
+    }
+
+    /* Absolute satellite positioning for the Paragraph Block (Bottom Satellite) */
+    .narrative-container {
+      position: absolute;
+      top: calc(100% + 24px);
+      left: 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    /* Pure white elements so they stand out perfectly */
+    .pure-white {
+      color: #ffffff !important;
+    }
+
+    /* Core typography spec matching Figma precisely */
+    .figma-text-spec, .menu-btn, #scramble-text {
+      font-family: 'Martian Mono', monospace !important;
+      font-size: 12px !important;
+      line-height: 14px !important;
+      letter-spacing: 0.08em !important;
+      color: #ffffff !important;
+      text-shadow: 0px 2px 14px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Interactive menu hover animations */
+    .menu-btn {
+      position: relative;
+      display: inline-block;
+      text-align: left;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+    .menu-btn::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      transform: scaleX(0);
+      height: 1px;
+      bottom: -2px;
+      left: 0;
+      background-color: #ffffff;
+      transform-origin: bottom right;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .menu-btn:hover::after {
+      transform: scaleX(1);
+      transform-origin: bottom left;
+    }
+
+    /* Tactile proximity underline effect for the founder's name */
+    .founder-word::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      height: 1px;
+      background-color: #ffffff;
+      width: var(--underline-progress, 0%);
+      transition: width 0.1s ease-out;
+    }
+    
+    /* Global Fade load animation for cinematic reveal */
+    @keyframes globalFadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    /* Mobile media query to scale down the central UI layout by 20% */
+    @media (max-width: 768px) {
+      .ui-wrapper {
+        width: 228px !important;
+        top: 35dvh !important;
+      }
+      .nav-container {
+        bottom: calc(100% + 19px) !important;
+        gap: 19px !important;
+      }
+      .narrative-container {
+        top: calc(100% + 19px) !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-full relative select-none">
+
+  <!-- THE BACKGROUND VIDEO ENGINE -->
+  <div class="video-viewport" id="video-viewport"></div>
+
+  <!-- INTERACTIVE PHYSICS LAYER (BLUR & VIGNETTE) -->
+  <div class="blur-overlay" id="blur-overlay"></div>
+  <div class="vignette-overlay"></div>
+
+  <!-- MAIN USER INTERFACE LAYER -->
+  <main class="ui-wrapper" id="main-ui-layer">
+    
+    <!-- Top (Navigation) -->
+    <nav class="nav-container">
+      <div>
+        <button id="about-btn" class="menu-btn figma-text-spec hover:opacity-100 transition-opacity opacity-75">
+          + about
+        </button>
+      </div>
+      <div>
+        <button id="reach-out-btn" class="menu-btn figma-text-spec hover:opacity-100 transition-opacity opacity-75">
+          + reach out
+        </button>
+      </div>
+      <div>
+        <a id="follow-btn" href="https://www.linkedin.com/company/love-of-country" target="_blank" rel="noopener noreferrer" class="menu-btn figma-text-spec hover:opacity-100 transition-opacity opacity-75">
+          + follow
+        </a>
+      </div>
+    </nav>
+
+    <!-- Middle (Wordmark) -->
+    <div class="wordmark-container select-none pointer-events-none">
+      <img src="https://love-of-country-assets.vercel.app/LoC%20Wordmark%20White.svg" id="wordmark" alt="Love of Country">
+    </div>
+
+    <!-- Bottom (Paragraph) -->
+    <div class="narrative-container select-text">
+      <p id="scramble-text" class="figma-text-spec text-white select-text opacity-95 hover:opacity-100 transition-opacity font-light text-left leading-[14px]">The AI revolution has sparked a modern gold rush, igniting an urgent need for the sustainable energy required to power it. Love of Country is a creative collective partnering with the most ambitious clean-energy pioneers to tell their stories. We elevate and amplify the frontier solutions that are propelling us into a brighter, cleaner future.</p>
+    </div>
+
+  </main>
+
+  <script>
+    // 1. THE ASSET INVENTORY (Direct URLs with correct Unicode % encoding for ellipsis)
+    const videos = [
+      "https://love-of-country-assets.vercel.app/Alaskan_Tundra_terrain_with_plants_202607161209.webm",
+      "https://love-of-country-assets.vercel.app/Brook_flowing_over_sediment_202607151950.webm",
+      "https://love-of-country-assets.vercel.app/Coastline_with_wet_sand_pebbles_202607161040.webm",
+      "https://love-of-country-assets.vercel.app/Everglades_scene_with_cypress_knees_202607161114.webm",
+      "https://love-of-country-assets.vercel.app/Grassland_meadow_with_wildflower%E2%80%A6_202607160939.webm",
+      "https://love-of-country-assets.vercel.app/Red_sandstone_soil_with_cactus_202607161000.webm",
+      "https://love-of-country-assets.vercel.app/Redwood_forest_floor_undergrowth_202607161345.webm",
+      "https://love-of-country-assets.vercel.app/Snow_expanse_with_snowdrifts_and%E2%80%A6_202607161350.webm",
+      "https://love-of-country-assets.vercel.app/Volcanic_lava_flow_on_ground_202607161352.webm"
+    ];
+
+    // DOM Elements
+    const videoViewport = document.getElementById("video-viewport");
+    const blurOverlay = document.getElementById("blur-overlay");
+    const scrambleEl = document.getElementById("scramble-text");
+    const aboutBtn = document.getElementById("about-btn");
+    const reachOutBtn = document.getElementById("reach-out-btn");
+
+    // State managers
+    let currentVideoIndex = 0;
+    const videoElements = [];
+    let transitionInterval = null;
+
+    const isMobile = window.matchMedia("(any-pointer: coarse)").matches;
+    if (isMobile) {
+      videoViewport.style.filter = "blur(0px)";
+    }
+
+    // 2. THE BACKGROUND VIDEO ENGINE
+
+    function initVideoEngine() {
+      currentVideoIndex = 0;
+      
+      // Dynamically generate all 10 <video> elements inside the background container
+      videos.forEach((src) => {
+        const video = document.createElement("video");
+        video.src = src;
+        video.muted = true;
+        video.playsinline = true;
+        video.loop = true;
+        video.setAttribute("preload", "auto");
+        videoViewport.appendChild(video);
+        videoElements.push(video);
+      });
+
+      // Initialize the first active video
+      const firstActive = videoElements[currentVideoIndex];
+      firstActive.style.opacity = "1";
+      playVideo(firstActive);
+
+      transitionInterval = setInterval(triggerCrossfade, 8000);
+    }
+
+    function playVideo(el) {
+      const playPromise = el.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.log("Autoplay check:", err);
+        });
+      }
+    }
+
+    // Reset the 8-second interval timer
+    function resetTransitionTimer() {
+      clearInterval(transitionInterval);
+      transitionInterval = setInterval(triggerCrossfade, 8000);
+    }
+
+    function triggerCrossfade() {
+      const nextIndex = (currentVideoIndex + 1) % videos.length;
+      executeCrossfade(nextIndex);
+    }
+
+    function executeCrossfade(nextIndex) {
+      const outgoingIndex = currentVideoIndex;
+      const outgoingVideo = videoElements[outgoingIndex];
+      const nextVideo = videoElements[nextIndex];
+
+      // Call .play() on the next video BEFORE changing its opacity so it starts rendering
+      playVideo(nextVideo);
+      nextVideo.style.opacity = "1";
+      outgoingVideo.style.opacity = "0";
+
+      // Set a setTimeout for 1250ms to call .pause() once it is fully invisible
+      setTimeout(() => {
+        if (currentVideoIndex !== outgoingIndex) {
+          outgoingVideo.pause();
+        }
+      }, 1250);
+
+      currentVideoIndex = nextIndex;
+    }
+
+    initVideoEngine();
+
+    // Global click handler to manually advance video with target filtering and timer reset
+    document.addEventListener('click', (event) => {
+      // Exclude Navigation Block (.nav-container), anchor tags, and buttons
+      if (
+        event.target.tagName === 'A' ||
+        event.target.tagName === 'BUTTON' ||
+        event.target.closest('a') ||
+        event.target.closest('button') ||
+        event.target.closest('.nav-container')
+      ) {
+        return;
+      }
+
+      // Advance the video instantly
+      const nextIndex = (currentVideoIndex + 1) % videos.length;
+      executeCrossfade(nextIndex);
+
+      // Reset the 8-second interval timer
+      resetTransitionTimer();
+    });
+
+
+    // 3. TEXT SCRAMBLE ENGINE (Matrix/Cipher Decryption Deciphering Effect)
+    class TextScrambler {
+      constructor(el) {
+        this.el = el;
+        this.alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        this.update = this.update.bind(this);
+      }
+      
+      setText(newText) {
+        // Prevent overlapping loops by cancelling any active animation frame
+        if (this.frameRequest) {
+          cancelAnimationFrame(this.frameRequest);
+        }
+
+        const promise = new Promise((resolve) => this.resolve = resolve);
+        
+        this.startTime = performance.now();
+        this.targetText = newText;
+        
+        // Tokenize newText into HTML tags and plain text characters
+        const tokens = [];
+        let idx = 0;
+        while (idx < newText.length) {
+          if (newText[idx] === '<') {
+            let j = newText.indexOf('>', idx);
+            if (j !== -1) {
+              tokens.push({ type: 'tag', content: newText.substring(idx, j + 1) });
+              idx = j + 1;
+              continue;
+            }
+          }
+          tokens.push({ type: 'text', char: newText[idx] });
+          idx++;
+        }
+
+        // Build the characters queue with the 3-phase staggered lifecycle
+        this.queue = [];
+        let textCharCount = 0;
+        let initialOutput = '';
+        
+        for (let i = 0; i < tokens.length; i++) {
+          const token = tokens[i];
+          if (token.type === 'tag') {
+            this.queue.push({
+              isTag: true,
+              content: token.content
+            });
+            initialOutput += token.content;
+          } else {
+            const toChar = token.char;
+            if (toChar === ' ' || toChar === '\n' || toChar === '\r') {
+              // Space or newline remains a space/newline immediately for geometry stability
+              this.queue.push({
+                isTag: false,
+                isWhitespace: true,
+                char: toChar
+              });
+              initialOutput += toChar;
+            } else {
+              const delay = textCharCount * 10; // Left-to-right stagger delay (10ms per text character)
+              const p2Duration = 100; // Phase 2 (Alphabet Cycle) duration reduced by 30% to exactly 100ms
+              
+              this.queue.push({
+                isTag: false,
+                isWhitespace: false,
+                to: toChar,
+                delay: delay,
+                p2End: delay + p2Duration,
+                lastCycleTime: 0,
+                cachedCycleChar: ''
+              });
+              initialOutput += '0';
+              textCharCount++;
+            }
+          }
+        }
+        
+        // Immediately render this initial block of zeros and spaces to DOM
+        this.el.innerHTML = initialOutput.replace(/\n/g, '<br>');
+        
+        this.update();
+        return promise;
+      }
+      
+      update() {
+        const now = performance.now();
+        const elapsed = now - this.startTime;
+        let output = '';
+        let resolvedCount = 0;
+        let totalScramblableCount = 0;
+        
+        for (let i = 0; i < this.queue.length; i++) {
+          const item = this.queue[i];
+          
+          if (item.isTag) {
+            output += item.content;
+          } else {
+            totalScramblableCount++;
+            if (item.isWhitespace) {
+              output += item.char;
+              resolvedCount++;
+            } else {
+              if (elapsed < item.delay) {
+                // Phase 1 (Sweep/Initial): Instantly set character to "0" (no stagger entering Phase 1)
+                output += '0';
+              } else if (elapsed < item.p2End) {
+                // Phase 2 (Alphabet Cycle): Cycle through random A-Z / a-z letters, updating every ~30ms
+                if (now - item.lastCycleTime > 30 || !item.cachedCycleChar) {
+                  item.cachedCycleChar = this.getRandomLetter();
+                  item.lastCycleTime = now;
+                }
+                output += item.cachedCycleChar;
+              } else {
+                // Phase 3 (Resolve): Lock character into place
+                output += item.to;
+                resolvedCount++;
+              }
+            }
+          }
+        }
+        
+        this.el.innerHTML = output.replace(/\n/g, '<br>');
+        
+        if (resolvedCount === totalScramblableCount) {
+          if (this.resolve) {
+            this.resolve();
+          }
+        } else {
+          this.frameRequest = requestAnimationFrame(this.update);
+        }
+      }
+      
+      getRandomLetter() {
+        return this.alphabet[Math.floor(Math.random() * this.alphabet.length)];
+      }
+    }
+
+    // Modularized function signature accepting targetElement and targetText
+    function runDecodingEffect(targetElement, targetText) {
+      if (!targetElement.__scrambler) {
+        targetElement.__scrambler = new TextScrambler(targetElement);
+      }
+      return targetElement.__scrambler.setText(targetText);
+    }
+
+    // Text resources
+    const homeParagraph = "The AI revolution has sparked a modern gold rush, igniting an urgent need for the sustainable energy required to power it. Love of Country is a creative collective partnering with the most ambitious clean-energy pioneers to tell their stories. We elevate and amplify the frontier solutions that are propelling us into a brighter, cleaner future.";
+
+    const aboutParagraph = "LoC was founded by <a href=\"https://www.linkedin.com/in/andrewlwilcox/\" target=\"_blank\" class=\"founder-link\" style=\"color: #ffffff; text-decoration: none; cursor: pointer;\"><span class=\"founder-word\" style=\"position: relative; display: inline-block;\">Andrew</span> <span class=\"founder-word\" style=\"position: relative; display: inline-block;\">Wilcox</span></a>, a creative leader and collaborator with extensive experience helping the world’s most ambitious technology companies turn product stories into human stories. Humanity is at a fork in the road. In the next decade we can either do the right thing, for the love of something greater than ourselves, or we don't. Love of Country puts all our energy into helping the companies doing the right thing, succeed— and we have fun doing it.";
+
+    let isAboutState = false;
+
+    function toggleToAbout() {
+      if (isAboutState) return;
+      isAboutState = true;
+      aboutBtn.classList.add("pure-white");
+      runDecodingEffect(scrambleEl, aboutParagraph);
+    }
+
+    function toggleToHome() {
+      if (!isAboutState) return;
+      isAboutState = false;
+      aboutBtn.classList.remove("pure-white");
+      runDecodingEffect(scrambleEl, homeParagraph);
+    }
+
+    // Toggle button event
+    aboutBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (isAboutState) {
+        toggleToHome();
+      } else {
+        toggleToAbout();
+      }
+    });
+
+    // Click anywhere else to go back to Home
+    document.addEventListener("click", (e) => {
+      // If we clicked outside the about link or clipboard or follow, and we are in about state, go home!
+      if (isAboutState) {
+        const clickedInteractive = e.target.closest('#about-btn') || e.target.closest('#reach-out-btn') || e.target.closest('#follow-btn');
+        if (!clickedInteractive) {
+          toggleToHome();
+        }
+      }
+    });
+
+
+    // 4. REACH OUT EMAIL CLIPBOARD SYSTEM
+    let reachOutResetTimeout = null;
+
+    reachOutBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      
+      // Copy email to clipboard
+      navigator.clipboard.writeText("andrewlwilcox@gmail.com").then(() => {
+        // Run modular decoding effect to "+ email copied to clipboard"
+        runDecodingEffect(reachOutBtn, "+ email copied to clipboard");
+        reachOutBtn.classList.add("pure-white");
+        
+        clearTimeout(reachOutResetTimeout);
+        reachOutResetTimeout = setTimeout(() => {
+          // Revert back to "+ reach out" with modular decoding effect
+          runDecodingEffect(reachOutBtn, "+ reach out");
+          reachOutBtn.classList.remove("pure-white");
+        }, 3000);
+      }).catch(err => {
+        console.error("Could not copy text: ", err);
+      });
+    });
+
+
+    // 5. INTERACTIVE PHYSICS (BLUR & FADE WITH LERPING)
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let userInteracted = false;
+    let idleTime = 0;
+    let targetBlur = 14;
+    let targetOpacity = 0.95;
+    let activeBlur = 14;
+    let activeOpacity = 0.95;
+
+    window.addEventListener("mousemove", (e) => {
+      if (isMobile) return;
+      userInteracted = true;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+
+      const founderLink = document.querySelector('.founder-link');
+      if (founderLink) {
+          const rect = founderLink.getBoundingClientRect();
+          const linkCenterX = rect.left + (rect.width / 2);
+          const linkCenterY = rect.top + (rect.height / 2);
+          
+          // Calculate distance from cursor to the true center of the link
+          const distance = Math.hypot(e.clientX - linkCenterX, e.clientY - linkCenterY);
+          
+          let progress = 0;
+          if (distance < 50) {
+              progress = 100;
+          } else if (distance > 250) {
+              progress = 0;
+          } else {
+              // Smooth interpolate between 50px (100%) and 250px (0%)
+              progress = 100 - ((distance - 50) / 200) * 100;
+          }
+          
+          const words = document.querySelectorAll('.founder-word');
+          words.forEach(word => {
+              word.style.setProperty('--underline-progress', `${progress}%`);
+          });
+      }
+    });
+
+    // 6. DEVICE ORIENTATION PHYSICS (MOBILE / TILT)
+    if (isMobile) {
+      let initialBeta = null;
+      let initialGamma = null;
+      window.addEventListener('deviceorientation', (e) => {
+        if (e.beta === null || e.gamma === null) return;
+        if (initialBeta === null) {
+          initialBeta = e.beta;
+          initialGamma = e.gamma;
+        }
+        const deltaBeta = Math.abs(e.beta - initialBeta);
+        const deltaGamma = Math.abs(e.gamma - initialGamma);
+        const totalDeviation = Math.min(Math.hypot(deltaBeta, deltaGamma), 30);
+        const tiltBlur = (totalDeviation / 30) * 14;
+        videoViewport.style.filter = `blur(${tiltBlur}px)`;
+      });
+    }
+
+    function physicsLoop() {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+
+      let currentTargetX = mouseX;
+      let currentTargetY = mouseY;
+
+      // Subtle lissajous floating drift when idle so the landing is always interactive and alive
+      if (!userInteracted) {
+        idleTime += 0.007;
+        const rx = window.innerWidth * 0.28;
+        const ry = window.innerHeight * 0.28;
+        currentTargetX = cx + Math.sin(idleTime) * rx;
+        currentTargetY = cy + Math.sin(idleTime * 0.6) * ry;
+      }
+
+      const dx = currentTargetX - cx;
+      const dy = currentTargetY - cy;
+      const currentDistance = Math.sqrt(dx * dx + dy * dy);
+      const maxDistance = Math.sqrt(cx * cx + cy * cy);
+      
+      // Create a 20% dead zone (no blur radius)
+      const deadZoneRadius = maxDistance * 0.20;
+      
+      // Ramp up blur only outside the dead zone
+      const activeDistance = Math.max(0, currentDistance - deadZoneRadius);
+      const maxActiveDistance = maxDistance - deadZoneRadius;
+      const activeRatio = maxActiveDistance > 0 ? Math.min(activeDistance / maxActiveDistance, 1.0) : 0;
+      
+      // The blur must smoothly interpolate from 0px up to the hardcoded maximum of 14px
+      targetBlur = activeRatio * 14;
+
+      // Keep strong opacity throughout for maximum copy readability, while providing a light organic focus shimmer
+      const distanceRatio = Math.min(currentDistance / maxDistance, 1.0);
+      targetOpacity = Math.max(0.72, 1.0 - (distanceRatio * 0.35));
+
+      // Silky linear interpolation LERP values
+      activeBlur += (targetBlur - activeBlur) * 0.08;
+      activeOpacity += (targetOpacity - activeOpacity) * 0.08;
+
+      if (isMobile) {
+        // Under touch mode, desktop blur is ignored, backdropFilter is cleared
+        blurOverlay.style.backdropFilter = 'none';
+        blurOverlay.style.webkitBackdropFilter = 'none';
+        scrambleEl.style.opacity = 1.0;
+      } else {
+        blurOverlay.style.backdropFilter = `blur(${activeBlur}px)`;
+        blurOverlay.style.webkitBackdropFilter = `blur(${activeBlur}px)`;
+        // Let the text opacity react slightly to focus
+        scrambleEl.style.opacity = activeOpacity;
+      }
+
+      requestAnimationFrame(physicsLoop);
+    }
+
+    requestAnimationFrame(physicsLoop);
+  </script>
+</body>
+</html>
